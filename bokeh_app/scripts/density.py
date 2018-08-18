@@ -10,9 +10,9 @@ from bokeh.models import (CategoricalColorMapper, HoverTool,
 						  FuncTickFormatter, SingleIntervalTicker, LinearAxis)
 from bokeh.models.widgets import (CheckboxGroup, Slider, RangeSlider, 
 								  Tabs, CheckboxButtonGroup, 
-								  TableColumn, DataTable, Select)
+								  TableColumn, DataTable, Select, TextInput, Button)
 from bokeh.layouts import column, row, WidgetBox
-from bokeh.palettes import Category20_16
+
 
 def density_tab(flights):
 	
@@ -41,9 +41,9 @@ def density_tab(flights):
 			xs.append(list(x))
 			ys.append(list(y))
 
-			# Append the colors and label
-			colors.append(airline_colors[i])
-			labels.append(carrier)
+			# # Append the colors and label
+			# colors.append(airline_colors[i])
+			# labels.append(carrier)
 
 		new_src = ColumnDataSource(data={'x': xs, 'y': ys, 
 								   'color': colors, 'label': labels})
@@ -73,26 +73,26 @@ def density_tab(flights):
 
 		return p
 	
-	def update(attr, old, new):
-		# List of carriers to plot
-		carriers_to_plot = [carrier_selection.labels[i] for i in 
-							carrier_selection.active]
-		
-		# If no bandwidth is selected, use the default value
-		if bandwidth_choose.active == []:
-			bandwidth = None
-		# If the bandwidth select is activated, use the specified bandwith
-		else:
-			bandwidth = bandwidth_select.value
-			
-		
-		new_src = make_dataset(carriers_to_plot,
-									range_start = range_select.value[0],
-									range_end = range_select.value[1],
-									bandwidth = bandwidth)
-		
-		src.data.update(new_src.data)
-		
+	# def update(attr, old, new):
+	# 	# List of carriers to plot
+	# 	carriers_to_plot = [carrier_selection.labels[i] for i in
+	# 						carrier_selection.active]
+	#
+	# 	# If no bandwidth is selected, use the default value
+	# 	if bandwidth_choose.active == []:
+	# 		bandwidth = None
+	# 	# If the bandwidth select is activated, use the specified bandwith
+	# 	else:
+	# 		bandwidth = bandwidth_select.value
+	#
+	#
+	# 	new_src = make_dataset(carriers_to_plot,
+	# 								range_start = range_select.value[0],
+	# 								range_end = range_select.value[1],
+	# 								bandwidth = bandwidth)
+	#
+	# 	src.data.update(new_src.data)
+	#
 	def style(p):
 		# Title 
 		p.title.align = 'center'
@@ -112,54 +112,78 @@ def density_tab(flights):
 		return p
 	
 	# Carriers and colors
-	available_carriers = list(set(flights['name']))
-	available_carriers.sort()
+	# available_carriers = list(set(flights['name']))
+	# available_carriers.sort()
+	#
+	# airline_colors = Category20_16
+	# airline_colors.sort()
+	#
+	# # Carriers to plot
+	# carrier_selection = CheckboxGroup(labels=available_carriers,
+	# 								   active = [0, 1])
+	# carrier_selection.on_change('active', update)
+	#
+	# range_select = RangeSlider(start = -60, end = 180, value = (-60, 120),
+	# 						   step = 5, title = 'Range of Delays (min)')
+	# range_select.on_change('value', update)
+	#
+	# # Initial carriers and data source
+	# initial_carriers = [carrier_selection.labels[i] for
+	# 					i in carrier_selection.active]
 
-	airline_colors = Category20_16
-	airline_colors.sort()
+	# FUNDS_EARMARKED_FOR_GOAL
+	fund_input = TextInput(value="100000", title="Funds for Goal:")
 
-	# Carriers to plot
-	carrier_selection = CheckboxGroup(labels=available_carriers, 
-									   active = [0, 1])
-	carrier_selection.on_change('active', update)
-	
-	range_select = RangeSlider(start = -60, end = 180, value = (-60, 120),
-							   step = 5, title = 'Range of Delays (min)')
-	range_select.on_change('value', update)
-	
-	# Initial carriers and data source
-	initial_carriers = [carrier_selection.labels[i] for 
-						i in carrier_selection.active]
-	
-	# Bandwidth of kernel
-	bandwidth_select = Slider(start = 0.1, end = 5, 
-							  step = 0.1, value = 0.5,
-							  title = 'Bandwidth for Density Plot')
-	bandwidth_select.on_change('value', update)
-	
-	# Whether to set the bandwidth or have it done automatically
-	bandwidth_choose = CheckboxButtonGroup(
-		labels=['Choose Bandwidth (Else Auto)'], active = [])
-	bandwidth_choose.on_change('active', update)
+	contribution_input = TextInput(value="1000", title="Contribution Amount:")
+
+	income_input = TextInput(value="100000", title="Annual Salary:")
+
+	fga_input = TextInput(value="100000", title="Future Goal Amount:")
+
+
+	retirementage_select = Slider(start = 20, end = 100, step = 1, value = 1, title = 'Projected Retirement Age')
+	#retirementage_select.on_change('value', update)
+
+	planning_select = Slider(start = 90, end = 120, step = 1, value = 1, title = 'Planning_Horizon')
+	#planning_select.on_change('value', update)
+
+
+	# Risk Tolerance
+	risk_select = Select(title="Risk Tolerance:", value="Moderate", options=["Very Conservative", "Conservative", "Moderate", "Aggressive", "Very Aggressive"])
+
+
+	age_select = Slider(start = 20, end = 100, step = 1, value = 1, title = 'Age')
+	#age_select.on_change('value', update)
+
+	b = Button(label='Simulate')
+
+	b.on_click(draw_simulation)
+
+
+
+	# # Whether to set the bandwidth or have it done automatically
+	# bandwidth_choose = CheckboxButtonGroup(
+	# 	labels=['Choose Bandwidth (Else Auto)'], active = [])
+	# bandwidth_choose.on_change('active', update)
 
 	# Make the density data source
-	src = make_dataset(initial_carriers, 
-						range_start = range_select.value[0],
-						range_end = range_select.value[1],
-						bandwidth = bandwidth_select.value) 
+#	src = make_dataset(initial_carriers,
+	# 					range_start = range_select.value[0],
+	# 					range_end = range_select.value[1],
+	# 					bandwidth = 3)
 	
 	# Make the density plot
-	p = make_plot(src)
+	#p = make_plot(src)
 	
 	# Add style to the plot
-	p = style(p)
+	#p = style(p)
 	
 	# Put controls in a single element
-	controls = WidgetBox(carrier_selection, range_select, 
-						 bandwidth_select, bandwidth_choose)
+	controls = WidgetBox(fund_input, contribution_input, income_input, fga_input,
+						 age_select, retirementage_select, planning_select, risk_select,b)
 	
 	# Create a row layout
-	layout = row(controls, p)
+	layout = row(controls)
 	
 	# Make a tab with the layout 
 	tab = Panel(child=layout, title = 'Density Plot')
