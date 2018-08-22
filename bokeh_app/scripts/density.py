@@ -100,7 +100,7 @@ def density_tab(flights):
 		return p
 
 	def make_new_plot(src):
-
+ 
 		my_path = os.path.abspath(os.path.dirname(__file__))
 		path = os.path.join(my_path, "x_train.pkl")
 
@@ -112,7 +112,6 @@ def density_tab(flights):
 		model_file_path = 'modelsave/'
 
 		y_pred = predict(model_file_path, x_train_standardized, y_train_standardized, x_test_standardized, y_test_standardized)
-
 
 		p = figure(plot_width=700, plot_height=700,
 				   title='Density Plot of Arrival Delays by Airline',
@@ -258,7 +257,10 @@ def density_tab(flights):
 		y_pred = tf.reduce_mean(y_mean, 0)
 		l2 = tf.norm(y_pred - y)/tf.norm(y)
 		log_py_xw = model.local_log_prob('y')
-
+        
+        devs_squared = tf.square(y_pred-y_mean)
+        var=tf.reduce_mean(devs_squared)*std_y_train*std_y_train
+        
 		# Define training/evaluation parameters
 		lb_samples = 10
 		ll_samples = 5000
@@ -295,16 +297,16 @@ def density_tab(flights):
 		#             print('Epoch {}: Lower bound = {}'.format(epoch, np.mean(lbs)))
 
 		#             if epoch % test_freq == 0:
-			test_lb,y_test_pred, ne = sess.run(
-						[lower_bound, y_pred, l2],
+			test_lb,y_test_pred, ne, pred_var = sess.run(
+						[lower_bound, y_pred, l2, var],
 						feed_dict={n_particles: ll_samples,
 								   x: x_test, y: y_test})
 			l2_error = NA.norm((y_test_pred - y_test))/NA.norm(y_test)
 
 			print('>> TEST')
-			print('>> Test lower bound = {}, l2error={}, l2_internal={}'.format(test_lb, l2_error, ne))
+			print('>> Test lower bound = {}, l2error={}, l2_internal={}, pred_var={}'.format(test_lb, l2_error, ne, pred_var))
 
-		return y_test_pred
+		return y_test_pred, pred_var
 
 
 	# Carriers and colors
